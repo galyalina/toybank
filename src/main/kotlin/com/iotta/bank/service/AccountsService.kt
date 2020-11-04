@@ -8,25 +8,19 @@ import org.springframework.stereotype.Service
 
 interface AccountsService {
 
-    fun getAccount(iban: String): Account
+    fun getAccount(iban: String): Account?
     fun deposit(iban: String, amount: Double): Boolean
     fun transfer(iban_from: String, iban_to: String, amount: Double): Boolean
     fun balance(iban: String): Double?
 
     @Service
-    class Impl() : AccountsService {
+    class Impl(private val repository: AccountRepository,
+               private val validator: TransferValidator,
+               private val transactionsService: TransactionsService
+    ) : AccountsService {
 
-        @Autowired
-        private lateinit var repository: AccountRepository
-
-        @Autowired
-        private lateinit var validator: TransferValidator
-
-        @Autowired
-        private lateinit var transactionsService: TransactionsService
-
-        override fun getAccount(iban: String): Account {
-            return Account(iban, AccountType.CHECKING, emptyList())
+        override fun getAccount(iban: String): Account? {
+            return repository.getAccount(iban)
         }
 
         override fun deposit(iban: String, amount: Double): Boolean {
